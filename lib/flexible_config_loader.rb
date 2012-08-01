@@ -35,7 +35,7 @@ module FlexibleConfigLoader
       config.deep_merge!(settings[name])
     end
 
-    APP_CONFIG = config.deep_symbolize_keys
+    Rails.configuration.app_config_hash = config.deep_symbolize_keys
   end
 
 end
