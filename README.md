@@ -8,42 +8,76 @@ nested hash.
 1. Store configuration info in YAML, since it's easy to read and change
 2. Allow common settings to be shared among all environments
 3. Allow each environment to override the common settings.
-4. Allow the YAML files to be loaded from both public and private folders so that
+4. Allow the YAML to be loaded from two separate files (public and private), so that 
    the developer can store some settings in source control and others outside of source control
 5. Allow environment variables to be used instead of YAML files (for Heroku, for example).
 
 ## Usage:
 
-The base public folder for YAML files is in config/yaml_settings/ 
-The base private folder (which should not be included in source control) is config/yaml_settings/private
+Install the gem and setup an intializer.
 
-In each of these folders you can create the following YAML files:
+### Gem
 
-common.yml -- settings shared among all environments
-production.yml -- settings for Production environment
-development.yml -- settings for Development environment
-{environment}.yml -- any other environment you have defined
+In your gemfile,
 
-Environment variables are named as follows:
+    gem 'flexible_config_loader', :path => "/path/to/this/gem"
+    
+### Initializer
 
-common_settings -- settings shared among all environments
-production_settings -- settings for Production environment
-development_settings -- settings for Development environment
-{environment}_settings -- settings for any other environment you've defined.
+In an initializer,
 
-The environment variables should base strict base64 encoded YAML.
+    # config/initializers/_load_config.rb
+    APP_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "flexible_settings")
+    
+### Explanation
 
-The YAML from the files and environment variables is loaded into a nested hash using YAML.load
+This will load YAML from `flexible_settings.yml`, `flexible_settings.local.yml`, and from an environment variable named `flexible_settings`.
 
-The settings are deep merged with one another in the following order of precdence:
+You can adjust the `:file_prefix` option if you wish to use different filenames (and environment variable name).
 
-1) environment specific environment variable (e.g. production_settings)
-2) common environment variable (common_settings)
-3) environment specific private YAML file (e.g. config/yaml_settings/private/production.yaml)
-4) common private YAML file (e.g. config/yaml_settings/private/common.yml)
-5) environment specific public YAML file (e.g. config/yaml_settings/production.yaml)
-6) common public YAML file (e.g. config/yaml_settings/common.yaml)
+### YAML files
 
+The YAML should contain a section for each environment as well as a section named default, like this:
 
-If any of the environment variables or YAML files are not present or produce an error while parsing, 
-this gem will treat it as if it is an empty hash of data.
+    # flexible_settings.yml
+    default:
+      api_key: ASDGLKASDG
+    
+    development:
+      api_key: HJASDOSHS 
+    
+    production:
+      api_key: ALSJHDGYD
+
+The YAML is loaded into a nested hash using `YAML.load`
+
+The environment-specific section of the YAML is deep merged into the default section.
+
+### Environment variables
+
+The environment variables should be strict base64 encoded YAML, in the same format as the YAML files, with a default section and a section for each relevant environment.
+
+### Deep merging
+
+The YAML from the two files and the environment variable are deep merged together in the following order of precedence:
+
+1. `flexible_settings` environment variable
+2. `flexible_settings.local.yml`
+3. `flexible_settings.yml`
+
+### Result
+  
+The result of the `load_config` method is a Hashie::Mash, which you can treat as a hash that is accessible with loose object notation like this:
+
+    APP_CONFIG.section.nested_section.value
+   
+You can read more about that [here] [1]
+
+### Loading more than one set of files:
+
+    # config/initializers/_load_config.rb
+    EMAIL_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "email_settings")
+    OTHER_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "other_settings")
+    
+    
+  [1]: https://github.com/intridea/hashie/
