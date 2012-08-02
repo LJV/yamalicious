@@ -20,7 +20,8 @@ Install the gem and setup an intializer.
 
 In your gemfile,
 
-    gem 'flexible_config_loader', :path => "/path/to/this/gem"
+    # Gemfile
+    gem 'flexible_config_loader'
     
 ### Initializer
 
