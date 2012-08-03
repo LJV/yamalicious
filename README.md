@@ -1,4 +1,4 @@
-# FlexibleConfigLoader
+# Yamalicious
 
 The purpose of this gem is to load configuration information from YAML files and environment variables into a globally available
 nested hash.
@@ -28,19 +28,31 @@ In your gemfile,
 In an initializer,
 
     # config/initializers/_load_config.rb
-    APP_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "flexible_settings")
+    APP_CONFIG = FlexibleConfigLoader.load_config
     
-### Explanation
+This will load YAML from `yamalicious.yml`, `yamalicious.local.yml`, and from an environment variable named `yamalicious`.
 
-This will load YAML from `flexible_settings.yml`, `flexible_settings.local.yml`, and from an environment variable named `flexible_settings`.
+### Configuration
 
-You can adjust the `:file_prefix` option if you wish to use different filenames (and environment variable name).
+If you wish to adjust which files are loaded and what environment variable is used, just pass a hash containing `:file_prefix` to `load_config` like this:
 
+    # config/initializers/_load_config.rb
+    APP_CONFIG = Yamalicious.load_config(:file_prefix => "settings")
+    
+This will load YAML from `settings.yml`, `settings.local.yml`, and from an environment variable named `settings`
+
+### Avoiding global constant
+
+If you don't like using a global constant like `APP_CONFIG`, you can use Rails' built in configuration object like this:
+
+    # config/initializers/_load_config.rb
+    Rails.configuration.yamalicious = Yamalicious.load_config
+  
 ### YAML files
 
 The YAML should contain a section for each environment as well as a section named default, like this:
 
-    # flexible_settings.yml
+    # yamalicious.yml
     default:
       api_key: ASDGLKASDG
     
@@ -62,9 +74,9 @@ The environment variables should be strict base64 encoded YAML, in the same form
 
 The YAML from the two files and the environment variable are deep merged together in the following order of precedence:
 
-1. `flexible_settings` environment variable
-2. `flexible_settings.local.yml`
-3. `flexible_settings.yml`
+1. `yamalicious` environment variable
+2. `yamalicious.local.yml`
+3. `yamalicious.yml`
 
 ### Result
   
@@ -77,8 +89,8 @@ You can read more about that [here] [1]
 ### Loading more than one set of files:
 
     # config/initializers/_load_config.rb
-    EMAIL_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "email_settings")
-    OTHER_CONFIG = FlexibleConfigLoader.load_config(:file_prefix => "other_settings")
+    EMAIL_CONFIG = Yamalicious.load_config(:file_prefix => "email_settings")
+    OTHER_CONFIG = Yamalicious.load_config(:file_prefix => "other_settings")
     
     
   [1]: https://github.com/intridea/hashie/
