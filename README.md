@@ -1,7 +1,7 @@
 # Yamalicious
 
 The purpose of this gem is to load configuration information from YAML files and environment variables into a globally available
-nested hash.
+nested hash (actually a Hashie::Mash rather than a hash).
 
 ## Goals:
 
@@ -21,14 +21,14 @@ Install the gem and setup an intializer.
 In your gemfile,
 
     # Gemfile
-    gem 'flexible_config_loader'
+    gem 'yamalicious'
     
 ### Initializer
 
 In an initializer,
 
     # config/initializers/_load_config.rb
-    APP_CONFIG = FlexibleConfigLoader.load_config
+    APP_CONFIG = Yamalicious.load_config
     
 This will load YAML from `yamalicious.yml`, `yamalicious.local.yml`, and from an environment variable named `yamalicious`.
 
