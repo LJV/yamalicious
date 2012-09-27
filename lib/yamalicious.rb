@@ -9,9 +9,16 @@ module Yamalicious
     file_prefix = options[:file_prefix] || "yamalicious"
     config_path = [Rails.root, 'config'].join('/')
     
- 
-    yaml_files = {:public => "#{file_prefix}.yml",
-                  :private => "#{file_prefix}.local.yml"}
+    # Load data from four files:
+    # 1) public file (include this in source control)
+    # 2) private default file (do not include this in source control)
+    # 3) public environment-specific file (include this in source control)
+    # 4) private environment-specific file (do not include this in source control)
+    
+    yaml_files = {:public_default => "#{file_prefix}.default.yml",
+                  :private_default => "#{file_prefix}.default.private.yml",
+                  :public_environment => "#{file_prefix}.#{Rails.env}.yml"
+                  :private_environment => "#{file_prefix}.#{Rails.env}.private.yml"}
 
     settings = {}
     
@@ -19,16 +26,14 @@ module Yamalicious
       settings[k] = YAML.load_file([config_path, filename].join("/")) || {} rescue {}
     end        
       
-    settings[:env] = YAML.load(Base64.strict_decode64(ENV[file_prefix.to_s])) || {} rescue {}
+    settings[:env_variable] = YAML.load(Base64.strict_decode64(ENV[file_prefix.to_s])) || {} rescue {}
 
     combined = {}
-
-    [:public, :private, :env].each do |name|
-      default_settings = settings[name]["default"] || {}
-      environment_settings = settings[name][Rails.env] || {}
-      combined.deep_merge!(default_settings.deep_merge(environment_settings))
+    
+    [:public_default, :private_default, :public_environment, :private_environment, :env_variable].each do |name|
+      combined.deep_merge!(settings[name])
     end
    
-    ::Hashie::Mash.new(combined.deep_symbolize_keys)
+    combined.deep_symbolize_keys
   end
 end
