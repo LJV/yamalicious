@@ -17,7 +17,7 @@ module Yamalicious
     
     yaml_files = {:public_default => "#{file_prefix}.default.yml",
                   :private_default => "#{file_prefix}.default.private.yml",
-                  :public_environment => "#{file_prefix}.#{Rails.env}.yml"
+                  :public_environment => "#{file_prefix}.#{Rails.env}.yml",
                   :private_environment => "#{file_prefix}.#{Rails.env}.private.yml"}
 
     settings = {}
